@@ -8,12 +8,10 @@ import { fileURLToPath, URL } from 'node:url'
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  base: '/cyberpepe2077/',
   plugins: [
+    tanstackRouter(),
     devtools(),
-    tanstackRouter({
-      target: 'react',
-      autoCodeSplitting: true,
-    }),
     viteReact(),
     tailwindcss(),
   ],
