@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Github, Mail, Twitter } from "lucide-react";
+import { Github, Mail } from "lucide-react";
 
 export const Route = createFileRoute("/about")({
 	component: About,
