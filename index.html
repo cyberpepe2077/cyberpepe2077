@@ -16,6 +16,16 @@
   </head>
   <body>
     <div id="app"></div>
+    <script>
+      // GitHub Pages SPA redirect 복원
+      (function () {
+        var redirect = sessionStorage.getItem('spa_redirect');
+        if (redirect) {
+          sessionStorage.removeItem('spa_redirect');
+          window.history.replaceState(null, '', redirect);
+        }
+      })();
+    </script>
     <script type="module" src="src/main.tsx"></script>
   </body>
 </html>
