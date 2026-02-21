@@ -1,0 +1,176 @@
+---
+title: "Modern CSS 레이아웃 완벽 가이드"
+date: "2024-01-05"
+category: "Frontend"
+tags: ["CSS", "Layout", "Responsive"]
+excerpt: "Flexbox, Grid, Container Queries 등 현대적인 CSS 레이아웃 기법들을 실용적인 예제와 함께 학습합니다."
+readTime: 10
+---
+
+CSS 레이아웃은 복잡한 UI를 만드는 핵심입니다. 현대 CSS는 이를 훨씬 직관적으로 만들어 주고 있습니다.
+
+## CSS Grid
+
+2차원 레이아웃을 위한 가장 강력한 도구입니다.
+
+```css
+.grid-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+}
+```
+
+`auto-fit`과 `minmax`를 조합하면 미디어 쿼리 없이 반응형 레이아웃을 만들 수 있습니다.
+
+### Grid Template Areas
+
+복잡한 레이아웃을 시각적으로 표현할 수 있습니다.
+
+```css
+.layout {
+  display: grid;
+  grid-template-areas:
+    "header header"
+    "sidebar main"
+    "footer footer";
+  grid-template-columns: 240px 1fr;
+  grid-template-rows: auto 1fr auto;
+  min-height: 100vh;
+}
+
+header  { grid-area: header; }
+.sidebar { grid-area: sidebar; }
+main    { grid-area: main; }
+footer  { grid-area: footer; }
+```
+
+## Flexbox
+
+1차원 레이아웃의 표준입니다. 정렬과 배분에 특히 유용합니다.
+
+```css
+/* 카드 컨테이너 */
+.cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.card {
+  flex: 1 1 300px; /* grow, shrink, basis */
+}
+
+/* 헤더 레이아웃 */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+```
+
+### 유용한 Flexbox 패턴
+
+```css
+/* 세로 중앙 정렬 */
+.center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 푸터를 항상 하단에 */
+.page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+.page main {
+  flex: 1;
+}
+```
+
+## Container Queries
+
+부모 요소의 크기에 따라 스타일을 적용합니다. 뷰포트가 아닌 **컴포넌트** 기준으로 반응형을 만드는 혁신적인 기능입니다.
+
+```css
+.card-wrapper {
+  container-type: inline-size;
+  container-name: card;
+}
+
+@container card (min-width: 400px) {
+  .card {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    gap: 1rem;
+  }
+}
+```
+
+같은 컴포넌트가 좁은 사이드바에서는 세로로, 넓은 메인 영역에서는 가로로 자동 변환됩니다.
+
+## Logical Properties
+
+RTL 언어 지원을 위한 물리적 방향에 독립적인 속성들입니다.
+
+```css
+/* 기존 */
+.box {
+  margin-left: 1rem;
+  padding-top: 0.5rem;
+  border-right: 1px solid;
+}
+
+/* Logical Properties */
+.box {
+  margin-inline-start: 1rem;  /* 좌우 쓰기 방향에 따라 */
+  padding-block-start: 0.5rem; /* 상하 쓰기 방향에 따라 */
+  border-inline-end: 1px solid;
+}
+```
+
+## CSS Subgrid
+
+부모 그리드의 트랙을 자식 요소가 상속받아 사용합니다.
+
+```css
+.parent {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
+  gap: 1rem;
+}
+
+.child {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: subgrid; /* 부모의 컬럼 트랙 상속 */
+}
+```
+
+카드 목록에서 각 카드의 내부 요소들을 열로 정렬할 때 매우 유용합니다.
+
+## :has() 선택자
+
+"이 요소를 포함한 부모"를 선택할 수 있는 강력한 선택자입니다.
+
+```css
+/* 이미지를 포함한 카드 */
+.card:has(img) {
+  grid-template-rows: auto 1fr;
+}
+
+/* 체크된 체크박스를 포함한 레이블 */
+label:has(input:checked) {
+  color: green;
+  font-weight: bold;
+}
+
+/* hover된 자식을 가진 nav */
+nav:has(a:hover) {
+  background: var(--bg-elevated);
+}
+```
+
+이 기능들을 조합하면 JavaScript 없이도 동적인 레이아웃을 만들 수 있습니다.

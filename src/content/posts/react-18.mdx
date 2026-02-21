@@ -1,0 +1,111 @@
+---
+title: "React 18의 새로운 기능들 완벽 정리"
+date: "2024-01-15"
+category: "Frontend"
+tags: ["React", "JavaScript", "Frontend"]
+excerpt: "React 18에서 도입된 Concurrent Features, Automatic Batching, Transitions 등 주요 기능들을 상세히 알아봅니다."
+readTime: 8
+---
+
+React 18은 여러 혁신적인 기능들을 도입했습니다. 핵심은 **Concurrent Rendering**으로, React가 여러 버전의 UI를 동시에 준비할 수 있게 해줍니다.
+
+## Concurrent Features
+
+Concurrent Rendering은 렌더링 작업을 중단하거나 재개할 수 있게 해주어 더 부드러운 사용자 경험을 만들어냅니다.
+
+### `useTransition`
+
+긴급하지 않은 상태 업데이트를 트랜지션으로 표시해 UI가 응답성을 유지하도록 합니다.
+
+```jsx
+import { useState, useTransition } from 'react'
+
+function SearchPage() {
+  const [query, setQuery] = useState('')
+  const [results, setResults] = useState([])
+  const [isPending, startTransition] = useTransition()
+
+  const handleChange = (e) => {
+    setQuery(e.target.value)
+
+    startTransition(() => {
+      setResults(searchData(e.target.value))
+    })
+  }
+
+  return (
+    <div>
+      <input value={query} onChange={handleChange} />
+      {isPending ? <Spinner /> : <Results data={results} />}
+    </div>
+  )
+}
+```
+
+### `useDeferredValue`
+
+특정 값의 업데이트를 지연시켜 빠른 업데이트가 먼저 처리되도록 합니다.
+
+```jsx
+import { useDeferredValue } from 'react'
+
+function App({ data }) {
+  const deferredData = useDeferredValue(data)
+  return <HeavyComponent data={deferredData} />
+}
+```
+
+## Automatic Batching
+
+React 18 이전에는 이벤트 핸들러 안에서만 상태 업데이트가 배칭되었습니다. 이제 `setTimeout`, `Promise`, 네이티브 이벤트 안에서도 자동으로 배칭됩니다.
+
+```jsx
+// React 18: 두 setState가 하나의 리렌더로 배칭됨
+setTimeout(() => {
+  setCount(c => c + 1)
+  setFlag(f => !f)
+  // 2번이 아닌 1번만 리렌더
+}, 1000)
+```
+
+만약 배칭을 원하지 않는다면 `flushSync`를 사용합니다.
+
+```jsx
+import { flushSync } from 'react-dom'
+
+flushSync(() => setCount(c => c + 1))  // 즉시 리렌더
+flushSync(() => setFlag(f => !f))      // 다시 즉시 리렌더
+```
+
+## Suspense 개선
+
+서버 사이드 렌더링에서 Suspense가 공식적으로 지원됩니다. `Suspense` 경계 단위로 스트리밍이 가능해졌습니다.
+
+```jsx
+function App() {
+  return (
+    <Suspense fallback={<PageSkeleton />}>
+      <Header />
+      <Suspense fallback={<CommentsSkeleton />}>
+        <Comments />
+      </Suspense>
+    </Suspense>
+  )
+}
+```
+
+## 마이그레이션
+
+React 18로 업그레이드하려면 `ReactDOM.render`를 `createRoot`로 교체해야 합니다.
+
+```jsx
+// 이전
+ReactDOM.render(<App />, document.getElementById('root'))
+
+// React 18
+import { createRoot } from 'react-dom/client'
+const root = createRoot(document.getElementById('root'))
+root.render(<App />)
+```
+
+대부분의 앱은 이 변경만으로 Concurrent 기능을 사용할 준비가 됩니다.

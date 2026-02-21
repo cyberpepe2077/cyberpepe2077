@@ -1,0 +1,147 @@
+---
+title: "TypeScript 고급 타입 시스템 마스터하기"
+date: "2024-01-10"
+category: "Language"
+tags: ["TypeScript", "타입시스템", "Programming"]
+excerpt: "Utility Types, Conditional Types, Template Literal Types 등 TypeScript의 고급 타입 시스템을 심도 있게 다룹니다."
+readTime: 12
+---
+
+TypeScript는 단순한 타입 검사기를 넘어 강력한 타입 시스템을 제공합니다. 고급 타입들을 활용하면 더 안전하고 표현력 있는 코드를 작성할 수 있습니다.
+
+## Utility Types
+
+TypeScript 내장 유틸리티 타입들은 기존 타입을 변환하는 데 유용합니다.
+
+```typescript
+interface User {
+  id: number
+  name: string
+  email: string
+  createdAt: Date
+}
+
+// 특정 속성만 선택
+type UserPreview = Pick<User, 'id' | 'name'>
+
+// 특정 속성 제외
+type UserWithoutId = Omit<User, 'id'>
+
+// 모든 속성을 옵셔널로
+type PartialUser = Partial<User>
+
+// 모든 속성을 필수로
+type RequiredUser = Required<PartialUser>
+
+// 모든 속성을 읽기 전용으로
+type ReadonlyUser = Readonly<User>
+
+// 두 타입의 교차
+type AdminUser = User & { role: 'admin' }
+```
+
+## Conditional Types
+
+타입 레벨에서 조건 분기가 가능합니다.
+
+```typescript
+type IsArray<T> = T extends unknown[] ? true : false
+
+type Test1 = IsArray<string[]>  // true
+type Test2 = IsArray<string>    // false
+
+// infer — 타입 추론
+type UnpackArray<T> = T extends (infer Item)[] ? Item : T
+
+type Strings = UnpackArray<string[]>  // string
+type Num = UnpackArray<number>        // number
+
+// 함수 반환 타입 추출
+type ReturnType<T> = T extends (...args: unknown[]) => infer R ? R : never
+
+type Fn = () => { id: number; name: string }
+type FnReturn = ReturnType<Fn>  // { id: number; name: string }
+```
+
+## Template Literal Types
+
+문자열 타입을 조합해 새로운 타입을 만들 수 있습니다.
+
+```typescript
+type EventName = 'click' | 'focus' | 'blur'
+type Handler = `on${Capitalize<EventName>}`
+// "onClick" | "onFocus" | "onBlur"
+
+// API 엔드포인트 타입
+type Endpoint = '/users' | '/posts' | '/comments'
+type Method = 'GET' | 'POST' | 'DELETE'
+type Route = `${Method} ${Endpoint}`
+// "GET /users" | "POST /users" | ... 모든 조합
+```
+
+## Mapped Types
+
+기존 타입의 모든 속성을 변환합니다.
+
+```typescript
+// 모든 값을 함수로 만들기
+type Getters<T> = {
+  [K in keyof T as `get${Capitalize<string & K>}`]: () => T[K]
+}
+
+type UserGetters = Getters<User>
+// {
+//   getId: () => number
+//   getName: () => string
+//   getEmail: () => string
+// }
+
+// 특정 타입의 속성만 필터링
+type FilterByType<T, Type> = {
+  [K in keyof T as T[K] extends Type ? K : never]: T[K]
+}
+
+type StringFields = FilterByType<User, string>
+// { name: string; email: string }
+```
+
+## Discriminated Unions
+
+패턴 매칭을 타입 안전하게 처리합니다.
+
+```typescript
+type Result<T> =
+  | { status: 'success'; data: T }
+  | { status: 'error'; message: string }
+  | { status: 'loading' }
+
+function handleResult<T>(result: Result<T>) {
+  switch (result.status) {
+    case 'success':
+      return result.data  // T 타입으로 추론됨
+    case 'error':
+      return result.message  // string으로 추론됨
+    case 'loading':
+      return null
+  }
+}
+```
+
+## satisfies 연산자
+
+타입 추론을 유지하면서 타입 호환성을 검사합니다.
+
+```typescript
+type ColorMap = Record<string, [number, number, number] | string>
+
+const palette = {
+  red: [255, 0, 0],
+  green: '#00ff00',
+  blue: [0, 0, 255],
+} satisfies ColorMap
+
+// palette.red는 [number, number, number]로 추론됨 (string | [number, number, number]가 아님)
+const [r, g, b] = palette.red  // ✅ 타입 안전
+```
+
+이러한 고급 타입들을 조합하면 런타임 에러 없이 복잡한 도메인 로직을 타입으로 표현할 수 있습니다.
